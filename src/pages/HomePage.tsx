@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logo from '../components/common/Logo';
 import Button from '../components/common/Button';
+import SearchBar from '../components/SearchBar';
 import { LogOut, Users, LineChart, Trophy, Search } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
 
@@ -20,14 +21,7 @@ const HomePage: React.FC = () => {
           <div className="flex justify-between items-center">
             <Logo size="md" />
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <input
-                  type="search"
-                  placeholder="Search players..."
-                  className="w-64 px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                <Search className="absolute right-3 top-2.5 text-gray-400" size={20} />
-              </div>
+              <SearchBar />
               <Link to="/login">
                 <Button
                   variant="outline"
@@ -96,20 +90,22 @@ const HomePage: React.FC = () => {
           </motion.div>
 
           {/* Player Stats Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-primary-500 transition-all cursor-pointer"
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="p-3 bg-gray-700 rounded-full mb-4">
-                <LineChart size={24} className="text-primary-400" />
+          <Link to="/player-stats">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-primary-500 transition-all cursor-pointer"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-gray-700 rounded-full mb-4">
+                  <LineChart size={24} className="text-primary-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Player Stats</h3>
+                <p className="text-gray-400 text-sm">Analyze detailed performance metrics and trends</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Player Stats</h3>
-              <p className="text-gray-400 text-sm">Analyze detailed performance metrics and trends</p>
-            </div>
-          </motion.div>
+            </motion.div>
+          </Link>
 
           {/* Position Analysis Card */}
           <motion.div
