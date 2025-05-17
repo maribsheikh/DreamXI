@@ -236,199 +236,195 @@ const PlayerStats: React.FC = () => {
               <h2 className="text-2xl font-bold mb-6">{league}</h2>
               
               {/* Top Scorers Chart */}
-              <div className="bg-gray-900 p-4 rounded-lg mb-6">
-                <h3 className="text-xl font-semibold mb-4">Top Scorers (Per 90 Minutes)</h3>
-                <div className="h-[400px]">
-                  <Line
-                    data={{
-                      labels: stats.top_scorers.map(player => `${player.name} (${player.squad})`),
-                      datasets: [
-                        {
-                          label: 'Goals per 90',
-                          data: stats.top_scorers.map(player => player.goals_per90),
-                          borderColor: 'rgb(99, 102, 241)',
-                          backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        },
-                        {
-                          label: 'Expected Goals per 90',
-                          data: stats.top_scorers.map(player => player.expected_goals_per90),
-                          borderColor: 'rgb(52, 211, 153)',
-                          backgroundColor: 'rgba(52, 211, 153, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        },
-                        {
-                          label: 'Total Goals per 90 (Actual + Expected)',
-                          data: stats.top_scorers.map(player => player.goals_per90 + player.expected_goals_per90),
-                          borderColor: 'rgb(244, 114, 182)',
-                          backgroundColor: 'rgba(244, 114, 182, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        }
-                      ],
-                    }}
-                    options={{
-                      ...chartOptions,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        ...chartOptions.plugins,
-                        title: {
-                          ...chartOptions.plugins.title,
-                          text: 'Goals vs Expected Goals (Per 90 Minutes)',
-                        },
-                        tooltip: {
-                          ...chartOptions.plugins.tooltip,
-                          callbacks: {
-                            label: function(context: any) {
-                              const label = context.dataset.label || '';
-                              const value = context.parsed.y || 0;
-                              return `${label}: ${value.toFixed(2)}`;
-                            },
-                            afterBody: function(context: any) {
-                              const playerIndex = context[0].dataIndex;
-                              const player = stats.top_scorers[playerIndex];
-                              return [
-                                '',
-                                `Total Goals: ${player.goals}`,
-                                `Expected Goals: ${player.expected_goals.toFixed(2)}`
-                              ];
-                            }
-                          }
-                        }
+              <h3 className="text-xl font-semibold mb-4">Top Scorers (Per 90 Minutes)</h3>
+              <div className="h-[400px]">
+                <Line
+                  data={{
+                    labels: stats.top_scorers.map(player => `${player.name} (${player.squad})`),
+                    datasets: [
+                      {
+                        label: 'Goals per 90',
+                        data: stats.top_scorers.map(player => player.goals_per90),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
                       },
-                      scales: {
-                        x: {
-                          ...chartOptions.scales.x,
-                          grid: {
-                            display: true,
-                            color: 'rgba(75, 85, 99, 0.2)'
-                          }
-                        },
-                        y: {
-                          ...chartOptions.scales.y,
-                          grid: {
-                            display: true,
-                            color: 'rgba(75, 85, 99, 0.2)'
+                      {
+                        label: 'Expected Goals per 90',
+                        data: stats.top_scorers.map(player => player.expected_goals_per90),
+                        borderColor: 'rgb(52, 211, 153)',
+                        backgroundColor: 'rgba(52, 211, 153, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
+                      },
+                      {
+                        label: 'Total Goals per 90 (Actual + Expected)',
+                        data: stats.top_scorers.map(player => player.goals_per90 + player.expected_goals_per90),
+                        borderColor: 'rgb(244, 114, 182)',
+                        backgroundColor: 'rgba(244, 114, 182, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
+                      }
+                    ],
+                  }}
+                  options={{
+                    ...chartOptions,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      title: {
+                        ...chartOptions.plugins.title,
+                        text: 'Goals vs Expected Goals (Per 90 Minutes)',
+                      },
+                      tooltip: {
+                        ...chartOptions.plugins.tooltip,
+                        callbacks: {
+                          label: function(context: any) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y || 0;
+                            return `${label}: ${value.toFixed(2)}`;
                           },
-                          min: 0,
-                          max: Math.max(...stats.top_scorers.map(p => Math.max(p.goals_per90 + p.expected_goals_per90))) + 0.1,
-                          ticks: {
-                            stepSize: 0.01,
-                            callback: function(value: any) {
-                              return value.toFixed(2);
-                            }
+                          afterBody: function(context: any) {
+                            const playerIndex = context[0].dataIndex;
+                            const player = stats.top_scorers[playerIndex];
+                            return [
+                              '',
+                              `Total Goals: ${player.goals}`,
+                              `Expected Goals: ${player.expected_goals.toFixed(2)}`
+                            ];
                           }
                         }
                       }
-                    }}
-                  />
-                </div>
+                    },
+                    scales: {
+                      x: {
+                        ...chartOptions.scales.x,
+                        grid: {
+                          display: true,
+                          color: 'rgba(75, 85, 99, 0.2)'
+                        }
+                      },
+                      y: {
+                        ...chartOptions.scales.y,
+                        grid: {
+                          display: true,
+                          color: 'rgba(75, 85, 99, 0.2)'
+                        },
+                        min: 0,
+                        max: Math.max(...stats.top_scorers.map(p => Math.max(p.goals_per90 + p.expected_goals_per90))) + 0.1,
+                        ticks: {
+                          stepSize: 0.01,
+                          callback: function(value: any) {
+                            return value.toFixed(2);
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
               </div>
 
               {/* Top Assisters Chart */}
-              <div className="bg-gray-900 p-4 rounded-lg">
-                <h3 className="text-xl font-semibold mb-4">Top Assisters (Per 90 Minutes)</h3>
-                <div className="h-[400px]">
-                  <Line
-                    data={{
-                      labels: stats.top_assisters.map(player => `${player.name} (${player.squad})`),
-                      datasets: [
-                        {
-                          label: 'Assists per 90',
-                          data: stats.top_assisters.map(player => player.assists_per90),
-                          borderColor: 'rgb(52, 211, 153)',
-                          backgroundColor: 'rgba(52, 211, 153, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        },
-                        {
-                          label: 'Expected Assists per 90',
-                          data: stats.top_assisters.map(player => player.expected_assists_per90),
-                          borderColor: 'rgb(99, 102, 241)',
-                          backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        },
-                        {
-                          label: 'Total Assists per 90 (Actual + Expected)',
-                          data: stats.top_assisters.map(player => player.assists_per90 + player.expected_assists_per90),
-                          borderColor: 'rgb(244, 114, 182)',
-                          backgroundColor: 'rgba(244, 114, 182, 0.5)',
-                          pointRadius: 6,
-                          pointHoverRadius: 8,
-                          tension: 0.1,
-                          fill: false
-                        }
-                      ],
-                    }}
-                    options={{
-                      ...chartOptions,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        ...chartOptions.plugins,
-                        title: {
-                          ...chartOptions.plugins.title,
-                          text: 'Assists vs Expected Assists (Per 90 Minutes)',
-                        },
-                        tooltip: {
-                          ...chartOptions.plugins.tooltip,
-                          callbacks: {
-                            label: function(context: any) {
-                              const label = context.dataset.label || '';
-                              const value = context.parsed.y || 0;
-                              return `${label}: ${value.toFixed(2)}`;
-                            },
-                            afterBody: function(context: any) {
-                              const playerIndex = context[0].dataIndex;
-                              const player = stats.top_assisters[playerIndex];
-                              return [
-                                '',
-                                `Total Assists: ${player.assists}`,
-                                `Expected Assists: ${player.expected_assists.toFixed(2)}`
-                              ];
-                            }
-                          }
-                        }
+              <h3 className="text-xl font-semibold mb-4">Top Assisters (Per 90 Minutes)</h3>
+              <div className="h-[400px]">
+                <Line
+                  data={{
+                    labels: stats.top_assisters.map(player => `${player.name} (${player.squad})`),
+                    datasets: [
+                      {
+                        label: 'Assists per 90',
+                        data: stats.top_assisters.map(player => player.assists_per90),
+                        borderColor: 'rgb(52, 211, 153)',
+                        backgroundColor: 'rgba(52, 211, 153, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
                       },
-                      scales: {
-                        x: {
-                          ...chartOptions.scales.x,
-                          grid: {
-                            display: true,
-                            color: 'rgba(75, 85, 99, 0.2)'
-                          }
-                        },
-                        y: {
-                          ...chartOptions.scales.y,
-                          grid: {
-                            display: true,
-                            color: 'rgba(75, 85, 99, 0.2)'
+                      {
+                        label: 'Expected Assists per 90',
+                        data: stats.top_assisters.map(player => player.expected_assists_per90),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
+                      },
+                      {
+                        label: 'Total Assists per 90 (Actual + Expected)',
+                        data: stats.top_assisters.map(player => player.assists_per90 + player.expected_assists_per90),
+                        borderColor: 'rgb(244, 114, 182)',
+                        backgroundColor: 'rgba(244, 114, 182, 0.5)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.1,
+                        fill: false
+                      }
+                    ],
+                  }}
+                  options={{
+                    ...chartOptions,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      ...chartOptions.plugins,
+                      title: {
+                        ...chartOptions.plugins.title,
+                        text: 'Assists vs Expected Assists (Per 90 Minutes)',
+                      },
+                      tooltip: {
+                        ...chartOptions.plugins.tooltip,
+                        callbacks: {
+                          label: function(context: any) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y || 0;
+                            return `${label}: ${value.toFixed(2)}`;
                           },
-                          min: 0,
-                          max: Math.max(...stats.top_assisters.map(p => Math.max(p.assists_per90 + p.expected_assists_per90))) + 0.1,
-                          ticks: {
-                            stepSize: 0.01,
-                            callback: function(value: any) {
-                              return value.toFixed(2);
-                            }
+                          afterBody: function(context: any) {
+                            const playerIndex = context[0].dataIndex;
+                            const player = stats.top_assisters[playerIndex];
+                            return [
+                              '',
+                              `Total Assists: ${player.assists}`,
+                              `Expected Assists: ${player.expected_assists.toFixed(2)}`
+                            ];
                           }
                         }
                       }
-                    }}
-                  />
-                </div>
+                    },
+                    scales: {
+                      x: {
+                        ...chartOptions.scales.x,
+                        grid: {
+                          display: true,
+                          color: 'rgba(75, 85, 99, 0.2)'
+                        }
+                      },
+                      y: {
+                        ...chartOptions.scales.y,
+                        grid: {
+                          display: true,
+                          color: 'rgba(75, 85, 99, 0.2)'
+                        },
+                        min: 0,
+                        max: Math.max(...stats.top_assisters.map(p => Math.max(p.assists_per90 + p.expected_assists_per90))) + 0.1,
+                        ticks: {
+                          stepSize: 0.01,
+                          callback: function(value: any) {
+                            return value.toFixed(2);
+                          }
+                        }
+                      }
+                    }
+                  }}
+                />
               </div>
             </div>
           ))}

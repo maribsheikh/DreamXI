@@ -77,7 +77,7 @@ const AboutPage: React.FC = () => {
               },
               {
                 icon: <LineChart className="text-primary-500 w-8 h-8" />,
-                title: "Real-time Analytics",
+                title: "Position Analytics",
                 description: "Get instant access to player statistics and performance metrics"
               },
               {
