@@ -8,6 +8,7 @@ import AboutPage from './pages/AboutPage';
 import FAQsPage from './pages/FAQsPage';
 import PlayerStats from './pages/PlayerStats';
 import PlayerDetails from './pages/PlayerDetails';
+import ComparePlayers from './pages/ComparePlayers';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/faqs" element={<FAQsPage />} />
         <Route path="/player-stats" element={<PlayerStats />} />
         <Route path="/player-stats/:id" element={<PlayerDetails />} />
+        <Route path="/compare" element={<ComparePlayers />} />
         <Route path="/forgot-password" element={<LoginPage />} /> {/* Placeholder */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

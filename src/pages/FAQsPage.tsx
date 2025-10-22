@@ -52,15 +52,15 @@ const FAQsPage: React.FC = () => {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <Logo size="md" />
+          <div className="flex items-center">
             <Link 
               to="/home" 
-              className="inline-flex items-center text-gray-300 hover:text-white transition-colors duration-200"
+              className="inline-flex items-center text-gray-300 hover:text-white transition-colors duration-200 mr-6"
             >
               <ArrowLeft size={20} className="mr-2" />
               Back to Home
             </Link>
+            <Logo size="md" />
           </div>
         </div>
       </header>

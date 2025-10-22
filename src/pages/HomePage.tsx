@@ -43,15 +43,26 @@ const HomePage: React.FC = () => {
       <nav className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
-            {['Statistics', 'Compare', 'Rankings'].map((item) => (
-              <button
-                key={item}
-                className="relative px-3 py-4 text-sm font-medium text-gray-300 hover:text-white group"
-              >
-                {item}
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 transform scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100" />
-              </button>
-            ))}
+            <Link
+              to="/player-stats"
+              className="relative px-3 py-4 text-sm font-medium text-gray-300 hover:text-white group"
+            >
+              Statistics
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 transform scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100" />
+            </Link>
+            <Link
+              to="/compare"
+              className="relative px-3 py-4 text-sm font-medium text-gray-300 hover:text-white group"
+            >
+              Compare
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 transform scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100" />
+            </Link>
+            <button
+              className="relative px-3 py-4 text-sm font-medium text-gray-300 hover:text-white group"
+            >
+              Rankings
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-500 transform scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100" />
+            </button>
             <Link
               to="/faqs"
               className="relative px-3 py-4 text-sm font-medium text-gray-300 hover:text-white group"

@@ -5,7 +5,7 @@ import { UserPlus, Facebook, ArrowRight } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { AuthFormData } from '../../types';
-import { handleGoogleAuth, handleFacebookAuth } from '../../utils/auth';
+import { registerUser, handleGoogleAuth, handleFacebookAuth } from '../../utils/auth';
 
 const SignupForm: React.FC = () => {
   const navigate = useNavigate();
@@ -70,11 +70,25 @@ const SignupForm: React.FC = () => {
     
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Split name into first and last name
+      const nameParts = formData.name?.split(' ') || [];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      await registerUser({
+        email: formData.email,
+        username: formData.email, // Use email as username
+        first_name: firstName,
+        last_name: lastName,
+        password: formData.password,
+        confirm_password: formData.confirmPassword || '',
+      });
       navigate('/home');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup error:', error);
+      setErrors({ 
+        email: error.message || 'Registration failed'
+      });
     } finally {
       setIsLoading(false);
     }

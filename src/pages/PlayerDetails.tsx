@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Share2, Bookmark } from 'lucide-react';
+import { motion } from 'framer-motion';
+import PlayerCard from '../components/PlayerCard';
+import PlayerStats from '../components/PlayerStats';
 
-interface PlayerStats {
+interface PlayerData {
+  id: number;
   name: string;
   squad: string;
   position: string;
@@ -12,19 +16,39 @@ interface PlayerStats {
   matches_played: number;
   matches_started: number;
   minutes_played: number;
+  minutes_90s: number;
   goals: number;
   assists: number;
+  goals_assists: number;
+  goals_no_penalty: number;
+  penalties_made: number;
+  penalties_attempted: number;
+  yellow_cards: number;
+  red_cards: number;
+  expected_goals: number;
+  expected_goals_no_penalty: number;
+  expected_assists: number;
+  expected_goals_assists: number;
   goals_per90: number;
   assists_per90: number;
-  expected_goals: number;
-  expected_assists: number;
+  goals_assists_per90: number;
+  goals_no_penalty_per90: number;
+  goals_assists_no_penalty_per90: number;
   expected_goals_per90: number;
   expected_assists_per90: number;
+  expected_goals_assists_per90: number;
+  expected_goals_no_penalty_per90: number;
+  expected_goals_assists_no_penalty_per90: number;
+  progressive_carries: number;
+  progressive_passes: number;
+  progressive_dribbles: number;
+  created_at: string;
+  updated_at: string;
 }
 
 const PlayerDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [player, setPlayer] = useState<PlayerStats | null>(null);
+  const [player, setPlayer] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,62 +110,96 @@ const PlayerDetails: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center mb-8">
-          <Link 
-            to="/home" 
-            className="flex items-center text-primary-400 hover:text-primary-300 transition-colors mr-4"
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Back to Home
-          </Link>
-          <h1 className="text-3xl font-bold">{player.name}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+      </div>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center">
+                <Link 
+                  to="/home" 
+                  className="flex items-center text-primary-400 hover:text-primary-300 transition-colors mr-6"
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  Back to Home
+                </Link>
+                <div className="h-6 w-px bg-gray-700 mr-6"></div>
+                <h1 className="text-xl font-bold text-white">{player.name}</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                  <Bookmark size={20} />
+                </button>
+                <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                  <Share2 size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Basic Information */}
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4">Player Information</h2>
-            <div className="space-y-2">
-              <p><span className="text-gray-400">Team:</span> {player.squad}</p>
-              <p><span className="text-gray-400">Position:</span> {player.position}</p>
-              <p><span className="text-gray-400">Nationality:</span> {player.nation}</p>
-              <p><span className="text-gray-400">League:</span> {player.competition}</p>
-              <p><span className="text-gray-400">Age:</span> {player.age}</p>
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
+          >
+            {/* Player Card */}
+            <div className="flex justify-center">
+              <PlayerCard player={player} />
             </div>
-          </div>
 
-          {/* Performance Stats */}
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4">Performance</h2>
-            <div className="space-y-2">
-              <p><span className="text-gray-400">Matches Played:</span> {player.matches_played}</p>
-              <p><span className="text-gray-400">Matches Started:</span> {player.matches_started}</p>
-              <p><span className="text-gray-400">Minutes Played:</span> {player.minutes_played}</p>
-            </div>
-          </div>
+            {/* Statistics */}
+            <PlayerStats player={player} />
 
-          {/* Goals and Assists */}
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h2 className="text-xl font-semibold mb-4">Goals & Assists</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Actual</h3>
-                <p><span className="text-gray-400">Goals:</span> {player.goals}</p>
-                <p><span className="text-gray-400">Assists:</span> {player.assists}</p>
-                <p><span className="text-gray-400">Goals/90:</span> {player.goals_per90.toFixed(2)}</p>
-                <p><span className="text-gray-400">Assists/90:</span> {player.assists_per90.toFixed(2)}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-medium mb-2">Expected</h3>
-                <p><span className="text-gray-400">xG:</span> {player.expected_goals.toFixed(2)}</p>
-                <p><span className="text-gray-400">xA:</span> {player.expected_assists.toFixed(2)}</p>
-                <p><span className="text-gray-400">xG/90:</span> {player.expected_goals_per90.toFixed(2)}</p>
-                <p><span className="text-gray-400">xA/90:</span> {player.expected_assists_per90.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
+            {/* League Context */}
+            {player.league_context && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6"
+              >
+                <h3 className="text-xl font-bold text-white mb-6">
+                  League Context - {player.league_context.league_name}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-4">Top Players in League</h4>
+                    <div className="space-y-2">
+                      {player.league_context.top_players.slice(0, 5).map((leaguePlayer: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-0">
+                          <span className="text-gray-300">{leaguePlayer.name}</span>
+                          <div className="text-sm text-gray-400">
+                            {leaguePlayer.goals}G {leaguePlayer.assists}A
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-primary-400 mb-2">
+                        {player.competition}
+                      </div>
+                      <div className="text-gray-400">Current League</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { LogIn, Facebook, ArrowRight } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { AuthFormData } from '../../types';
-import { handleGoogleAuth, handleFacebookAuth } from '../../utils/auth';
+import { loginUser, handleGoogleAuth, handleFacebookAuth } from '../../utils/auth';
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -57,11 +57,14 @@ const LoginForm: React.FC = () => {
     
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await loginUser(formData.email, formData.password);
       navigate('/home');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      setErrors({ 
+        email: 'Invalid credentials',
+        password: 'Invalid credentials'
+      });
     } finally {
       setIsLoading(false);
     }
