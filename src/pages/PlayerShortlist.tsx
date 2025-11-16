@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, BookmarkCheck, X, ExternalLink, Trash2, Filter } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
 import { getPlayerImage, getTeamBasedImage, getPositionBasedImage } from '../utils/imageService';
+import { getShortlist, clearShortlist as clearShortlistUtil, removeFromShortlist as removeFromShortlistAPI } from '../utils/shortlist';
 
 interface Player {
   id: number;
@@ -26,33 +27,19 @@ interface PlayerWithImage extends Player {
 }
 
 const PlayerShortlist: React.FC = () => {
-  const [shortlist, setShortlist] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem('player_shortlist');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure it's an array and contains only numbers
-        if (Array.isArray(parsed) && parsed.every(id => typeof id === 'number')) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading shortlist from localStorage:', error);
-    }
-    return [];
-  });
+  const [shortlist, setShortlist] = useState<number[]>([]);
   const [players, setPlayers] = useState<PlayerWithImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<string>('All');
 
-  // Save to localStorage whenever shortlist changes
+  // Load shortlist from API on mount
   useEffect(() => {
-    try {
-      localStorage.setItem('player_shortlist', JSON.stringify(shortlist));
-    } catch (error) {
-      console.error('Error saving shortlist to localStorage:', error);
-    }
-  }, [shortlist]);
+    const loadShortlist = async () => {
+      const playerIds = await getShortlist();
+      setShortlist(playerIds);
+    };
+    loadShortlist();
+  }, []);
 
   useEffect(() => {
     fetchShortlistedPlayers();
@@ -157,20 +144,17 @@ const PlayerShortlist: React.FC = () => {
     }
   };
 
-  const removeFromShortlist = (playerId: number) => {
-    setShortlist(prev => {
-      const updated = prev.filter(id => id !== playerId);
-      localStorage.setItem('player_shortlist', JSON.stringify(updated));
-      return updated;
-    });
+  const removeFromShortlist = async (playerId: number) => {
+    const success = await removeFromShortlistAPI(playerId);
+    if (success) {
+      setShortlist(prev => prev.filter(id => id !== playerId));
+    }
   };
 
-  const clearShortlist = () => {
-    setShortlist([]);
-    try {
-      localStorage.setItem('player_shortlist', JSON.stringify([]));
-    } catch (error) {
-      console.error('Error clearing shortlist from localStorage:', error);
+  const clearShortlist = async () => {
+    const success = await clearShortlistUtil();
+    if (success) {
+      setShortlist([]);
     }
   };
 

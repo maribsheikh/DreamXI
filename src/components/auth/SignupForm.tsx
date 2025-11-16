@@ -75,7 +75,7 @@ const SignupForm: React.FC = () => {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
       
-      await registerUser({
+      const result = await registerUser({
         email: formData.email,
         username: formData.email, // Use email as username
         first_name: firstName,
@@ -83,12 +83,52 @@ const SignupForm: React.FC = () => {
         password: formData.password,
         confirm_password: formData.confirmPassword || '',
       });
+      
+      // Ensure token is set before navigation
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Registration succeeded but authentication token was not set. Please try logging in.');
+      }
+      
+      // Check if user is admin and redirect accordingly
+      try {
+        const adminCheck = await fetch('http://localhost:8000/api/admin/check/', {
+          headers: {
+            'Authorization': `Token ${token}`,
+          },
+        });
+        
+        if (adminCheck.ok) {
+          const adminData = await adminCheck.json();
+          if (adminData.is_admin) {
+            navigate('/admin');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        // Continue to home page even if admin check fails
+      }
+      
+      // Navigate to home page for regular users
       navigate('/home');
     } catch (error: any) {
       console.error('Signup error:', error);
-      setErrors({ 
-        email: error.message || 'Registration failed'
-      });
+      const errorMessage = error?.message || 'Registration failed. Please check your information and try again.';
+      
+      // Set appropriate error fields
+      if (errorMessage.toLowerCase().includes('email')) {
+        setErrors({ email: errorMessage });
+      } else if (errorMessage.toLowerCase().includes('password')) {
+        setErrors({ password: errorMessage, confirmPassword: errorMessage });
+      } else if (errorMessage.toLowerCase().includes('username')) {
+        setErrors({ email: errorMessage }); // Username is same as email
+      } else {
+        setErrors({ 
+          email: errorMessage,
+          password: errorMessage.includes('server') ? '' : errorMessage
+        });
+      }
     } finally {
       setIsLoading(false);
     }

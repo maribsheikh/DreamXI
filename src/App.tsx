@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
@@ -12,6 +11,8 @@ import ComparePlayers from './pages/ComparePlayers';
 import TopPlayers from './pages/TopPlayers';
 import PlayerShortlist from './pages/PlayerShortlist';
 import SetPieceSpecialists from './pages/SetPieceSpecialists';
+import AdminPanel from './pages/AdminPanel';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -20,15 +21,16 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/faqs" element={<FAQsPage />} />
-        <Route path="/player-stats" element={<PlayerStats />} />
-        <Route path="/player-stats/:id" element={<PlayerDetails />} />
-        <Route path="/compare" element={<ComparePlayers />} />
-        <Route path="/top-players" element={<TopPlayers />} />
-        <Route path="/shortlist" element={<PlayerShortlist />} />
-        <Route path="/set-piece-specialists" element={<SetPieceSpecialists />} />
+        <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
+        <Route path="/faqs" element={<ProtectedRoute><FAQsPage /></ProtectedRoute>} />
+        <Route path="/player-stats" element={<ProtectedRoute><PlayerStats /></ProtectedRoute>} />
+        <Route path="/player-stats/:id" element={<ProtectedRoute><PlayerDetails /></ProtectedRoute>} />
+        <Route path="/compare" element={<ProtectedRoute><ComparePlayers /></ProtectedRoute>} />
+        <Route path="/top-players" element={<ProtectedRoute><TopPlayers /></ProtectedRoute>} />
+        <Route path="/shortlist" element={<ProtectedRoute><PlayerShortlist /></ProtectedRoute>} />
+        <Route path="/set-piece-specialists" element={<ProtectedRoute><SetPieceSpecialists /></ProtectedRoute>} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/forgot-password" element={<LoginPage />} /> {/* Placeholder */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

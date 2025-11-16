@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Target, Filter, Search, Bookmark, Check } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
+import { getShortlist, toggleShortlist as toggleShortlistAPI } from '../utils/shortlist';
 
 interface Specialist {
   player_id: number;
@@ -38,21 +39,17 @@ const SetPieceSpecialists: React.FC = () => {
   const [sortField, setSortField] = useState<string>('penalty_accuracy');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
-  // Shortlist - load from localStorage on mount
-  const [shortlist, setShortlist] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem('player_shortlist');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.every(id => typeof id === 'number')) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading shortlist from localStorage:', error);
-    }
-    return [];
-  });
+  // Shortlist - load from API on mount
+  const [shortlist, setShortlist] = useState<number[]>([]);
+
+  // Load shortlist from API on mount
+  useEffect(() => {
+    const loadShortlist = async () => {
+      const playerIds = await getShortlist();
+      setShortlist(playerIds);
+    };
+    loadShortlist();
+  }, []);
   
   const positions = ['All', 'GK', 'DF', 'MF', 'FW'];
   const leagues = ['All', 'Premier League', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1'];
@@ -60,15 +57,6 @@ const SetPieceSpecialists: React.FC = () => {
   useEffect(() => {
     fetchSpecialists();
   }, [selectedLeague, selectedPosition, ageMin, ageMax, minMinutes]);
-
-  // Save to localStorage whenever shortlist changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('player_shortlist', JSON.stringify(shortlist));
-    } catch (error) {
-      console.error('Error saving shortlist to localStorage:', error);
-    }
-  }, [shortlist]);
 
   const fetchSpecialists = async () => {
     setLoading(true);
@@ -145,18 +133,17 @@ const SetPieceSpecialists: React.FC = () => {
     }
   };
 
-  const toggleShortlist = (playerId: number) => {
-    setShortlist(prev => {
-      const updated = prev.includes(playerId) 
-        ? prev.filter(id => id !== playerId)
-        : [...prev, playerId];
-      try {
-        localStorage.setItem('player_shortlist', JSON.stringify(updated));
-      } catch (error) {
-        console.error('Error saving shortlist to localStorage:', error);
-      }
-      return updated;
-    });
+  const toggleShortlist = async (playerId: number) => {
+    const result = await toggleShortlistAPI(playerId);
+    if (result.success) {
+      setShortlist(prev => {
+        if (result.in_shortlist) {
+          return prev.includes(playerId) ? prev : [...prev, playerId];
+        } else {
+          return prev.filter(id => id !== playerId);
+        }
+      });
+    }
   };
 
   const isShortlisted = (playerId: number) => shortlist.includes(playerId);

@@ -37,9 +37,7 @@ const LoginForm: React.FC = () => {
     const newErrors: Partial<AuthFormData> = {};
     
     if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email or username is required';
     }
     
     if (!formData.password) {
@@ -58,12 +56,36 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
     try {
       await loginUser(formData.email, formData.password);
+      
+      // Check if user is admin and redirect accordingly
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const adminCheck = await fetch('http://localhost:8000/api/admin/check/', {
+            headers: {
+              'Authorization': `Token ${token}`,
+            },
+          });
+          
+          if (adminCheck.ok) {
+            const adminData = await adminCheck.json();
+            if (adminData.is_admin) {
+              navigate('/admin');
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      }
+      
       navigate('/home');
     } catch (error: any) {
       console.error('Login error:', error);
+      const errorMessage = error?.message || 'Invalid credentials. Please check your email/username and password.';
       setErrors({ 
-        email: 'Invalid credentials',
-        password: 'Invalid credentials'
+        email: errorMessage,
+        password: errorMessage
       });
     } finally {
       setIsLoading(false);
@@ -79,9 +101,9 @@ const LoginForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           id="email"
-          label="Email address"
-          type="email"
-          placeholder="name@example.com"
+          label="Email or Username"
+          type="text"
+          placeholder="email@example.com or username"
           value={formData.email}
           onChange={handleChange}
           required

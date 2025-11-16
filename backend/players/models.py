@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Player(models.Model):
     # Basic Information
@@ -62,4 +63,23 @@ class Player(models.Model):
             models.Index(fields=['position']),
             models.Index(fields=['competition']),
         ]
-        ordering = ['name'] 
+        ordering = ['name']
+
+
+class UserShortlist(models.Model):
+    """Model to store user's shortlisted players in PostgreSQL"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shortlisted_players')
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='shortlisted_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_shortlist'
+        unique_together = ['user', 'player']  # Prevent duplicate entries
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['player']),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.player.name}" 

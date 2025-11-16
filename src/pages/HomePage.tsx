@@ -3,17 +3,39 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logo from '../components/common/Logo';
 import SearchBar from '../components/SearchBar';
-import { LogOut, Users, LineChart, Trophy, GitCompare, ChevronDown, ChevronUp, Mail, Bookmark, Target } from 'lucide-react';
+import { LogOut, Users, LineChart, Trophy, GitCompare, ChevronDown, ChevronUp, Mail, Bookmark, Target, Shield } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
 
 const HomePage: React.FC = () => {
   const [selectedPosition, setSelectedPosition] = useState<string>('All');
   const [openFAQIndex, setOpenFAQIndex] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Always scroll to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    checkAdminStatus();
   }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+      
+      const response = await fetch('http://localhost:8000/api/admin/check/', {
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsAdmin(data.is_admin);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const positionFilters = ['All', 'GK', 'DF', 'MF', 'FW'];
 
@@ -244,6 +266,36 @@ const HomePage: React.FC = () => {
               </div>
             </motion.div>
           </Link>
+
+          {/* Admin Panel Card - Only visible to admins */}
+          {isAdmin && (
+            <Link to="/admin" className="block h-full">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+                className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(234,179,8,0.3)] transition-all duration-500"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-yellow-600/0 to-yellow-500/0 group-hover:from-yellow-500/10 group-hover:via-yellow-600/15 group-hover:to-yellow-500/10 transition-all duration-500"></div>
+                
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </div>
+                
+                <div className="relative z-10 w-full">
+                  <motion.div 
+                    whileHover={{ rotate: [0, -5, 5, -5, 0] }}
+                    transition={{ duration: 0.5 }}
+                    className="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-yellow-500/30 via-yellow-600/25 to-yellow-500/30 backdrop-blur-sm border border-yellow-400/40 group-hover:border-yellow-400/60 group-hover:from-yellow-500/40 group-hover:via-yellow-600/35 group-hover:to-yellow-500/40 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] transition-all duration-500 shadow-xl"
+                  >
+                    <Shield size={32} className="text-yellow-300 group-hover:text-yellow-200 drop-shadow-lg transition-colors duration-300" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-yellow-200 drop-shadow-md transition-colors duration-300">Admin Panel</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed font-medium group-hover:text-gray-200 transition-colors duration-300">Upload new season datasets</p>
+                </div>
+              </motion.div>
+            </Link>
+          )}
           </div>
         </div>
       </main>

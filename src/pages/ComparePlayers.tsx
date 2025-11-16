@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Search, TrendingUp, Target, ArrowLeft, CheckCircle2, X, Bookmark, BookmarkCheck, AlertCircle } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
+import { getShortlist, toggleShortlist as toggleShortlistAPI } from '../utils/shortlist';
 
 interface PlayerData {
   id: number;
@@ -64,22 +65,17 @@ const ComparePlayers: React.FC = () => {
   const [modalMessage, setModalMessage] = useState('');
   const searchRef1 = useRef<HTMLDivElement>(null);
   const searchRef2 = useRef<HTMLDivElement>(null);
-  // Shortlist - load from localStorage on mount
-  const [shortlist, setShortlist] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem('player_shortlist');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure it's an array and contains only numbers
-        if (Array.isArray(parsed) && parsed.every(id => typeof id === 'number')) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading shortlist from localStorage:', error);
-    }
-    return [];
-  });
+  // Shortlist - load from API on mount
+  const [shortlist, setShortlist] = useState<number[]>([]);
+
+  // Load shortlist from API on mount
+  useEffect(() => {
+    const loadShortlist = async () => {
+      const playerIds = await getShortlist();
+      setShortlist(playerIds);
+    };
+    loadShortlist();
+  }, []);
 
   const positions = [
     'Goalkeeper', 'Centre-Back', 'Left-Back', 'Right-Back',
@@ -250,18 +246,17 @@ const ComparePlayers: React.FC = () => {
     setComparisonResult(null); // Clear comparison result when clearing a player
   };
 
-  const toggleShortlist = (playerId: number) => {
-    setShortlist(prev => {
-      const newShortlist = prev.includes(playerId) 
-        ? prev.filter(id => id !== playerId)
-        : [...prev, playerId];
-      try {
-        localStorage.setItem('player_shortlist', JSON.stringify(newShortlist));
-      } catch (error) {
-        console.error('Error saving shortlist to localStorage:', error);
-      }
-      return newShortlist;
-    });
+  const toggleShortlist = async (playerId: number) => {
+    const result = await toggleShortlistAPI(playerId);
+    if (result.success) {
+      setShortlist(prev => {
+        if (result.in_shortlist) {
+          return prev.includes(playerId) ? prev : [...prev, playerId];
+        } else {
+          return prev.filter(id => id !== playerId);
+        }
+      });
+    }
   };
 
   const isShortlisted = (playerId: number) => shortlist.includes(playerId);
@@ -688,7 +683,7 @@ const ComparePlayers: React.FC = () => {
                   className="flex items-center justify-center gap-3"
                 >
                   <button
-                    onClick={() => toggleShortlist(getWinnerPlayer()!.id)}
+                    onClick={() => { toggleShortlist(getWinnerPlayer()!.id); }}
                     className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       isShortlisted(getWinnerPlayer()!.id)
                         ? 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/50 hover:bg-yellow-500/30 hover:border-yellow-400'

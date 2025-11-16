@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Trophy, Medal, Award, Filter, Plus, Check } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
+import { getShortlist, toggleShortlist as toggleShortlistAPI } from '../utils/shortlist';
 
 interface Player {
   rank: number;
@@ -63,22 +64,17 @@ const TopPlayers: React.FC = () => {
   const [sortField, setSortField] = useState<string>('rank');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
-  // Shortlist - load from localStorage on mount
-  const [shortlist, setShortlist] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem('player_shortlist');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure it's an array and contains only numbers
-        if (Array.isArray(parsed) && parsed.every(id => typeof id === 'number')) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading shortlist from localStorage:', error);
-    }
-    return [];
-  });
+  // Shortlist - load from API on mount
+  const [shortlist, setShortlist] = useState<number[]>([]);
+
+  // Load shortlist from API on mount
+  useEffect(() => {
+    const loadShortlist = async () => {
+      const playerIds = await getShortlist();
+      setShortlist(playerIds);
+    };
+    loadShortlist();
+  }, []);
 
   const metrics = [
     { value: 'goals', label: 'Top Scorers', icon: Trophy },
@@ -99,14 +95,7 @@ const TopPlayers: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [selectedMetric, selectedLeague, selectedAge, customTopN]);
 
-  // Save to localStorage whenever shortlist changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('player_shortlist', JSON.stringify(shortlist));
-    } catch (error) {
-      console.error('Error saving shortlist to localStorage:', error);
-    }
-  }, [shortlist]);
+  // Shortlist is now managed via API, no need to save to localStorage
 
   const fetchTopPlayers = async () => {
     setLoading(true);
@@ -141,19 +130,17 @@ const TopPlayers: React.FC = () => {
     }
   };
 
-  const toggleShortlist = (playerId: number) => {
-    setShortlist(prev => {
-      const updated = prev.includes(playerId) 
-        ? prev.filter(id => id !== playerId)
-        : [...prev, playerId];
-      // localStorage is saved automatically via useEffect, but we ensure it here too
-      try {
-        localStorage.setItem('player_shortlist', JSON.stringify(updated));
-      } catch (error) {
-        console.error('Error saving shortlist to localStorage:', error);
-      }
-      return updated;
-    });
+  const toggleShortlist = async (playerId: number) => {
+    const result = await toggleShortlistAPI(playerId);
+    if (result.success) {
+      setShortlist(prev => {
+        if (result.in_shortlist) {
+          return prev.includes(playerId) ? prev : [...prev, playerId];
+        } else {
+          return prev.filter(id => id !== playerId);
+        }
+      });
+    }
   };
 
   const isShortlisted = (playerId: number) => shortlist.includes(playerId);
