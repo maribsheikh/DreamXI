@@ -60,12 +60,18 @@ const TopPlayers: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState<string>('goals');
   const [selectedLeague, setSelectedLeague] = useState<string>('All');
   const [selectedAge, setSelectedAge] = useState<string>('All');
-  const [customTopN, setCustomTopN] = useState<string>('10');
+  const [customTopN, setCustomTopN] = useState<string>('0');
   const [sortField, setSortField] = useState<string>('rank');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [topNError, setTopNError] = useState<string>('');
   
   // Shortlist - load from API on mount
   const [shortlist, setShortlist] = useState<number[]>([]);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Load shortlist from API on mount
   useEffect(() => {
@@ -93,16 +99,31 @@ const TopPlayers: React.FC = () => {
     }, 300); // Wait 300ms after user stops typing
     
     return () => clearTimeout(timeoutId);
-  }, [selectedMetric, selectedLeague, selectedAge, customTopN]);
+  }, [selectedMetric, selectedLeague, selectedAge, customTopN, topNError]);
 
   // Shortlist is now managed via API, no need to save to localStorage
 
   const fetchTopPlayers = async () => {
+    // Don't fetch if there's an error in the input or if value is 0
+    if (topNError) {
+      setPlayers([]);
+      setLoading(false);
+      return;
+    }
+
+    // Parse and validate the limit value
+    const parsedValue = customTopN.trim() === '' ? 0 : parseInt(customTopN.trim());
+    
+    // If value is 0, empty, invalid, or out of range, don't fetch
+    if (isNaN(parsedValue) || parsedValue < 1 || parsedValue > 50 || parsedValue === 0) {
+      setPlayers([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Parse and validate the limit value (ensure it's not 0)
-      const parsedValue = customTopN.trim() === '' ? 10 : parseInt(customTopN.trim());
-      const limit = Math.max(1, Math.min(50, (isNaN(parsedValue) || parsedValue === 0) ? 10 : parsedValue));
+      const limit = Math.max(1, Math.min(50, parsedValue));
       
       const leagueParam = selectedLeague === 'All' ? '' : selectedLeague;
       const ageParam = selectedAge === 'All' ? '' : selectedAge;
@@ -194,25 +215,100 @@ const TopPlayers: React.FC = () => {
   const filteredAndSortedPlayers = useMemo(() => {
     let filtered = players;
     
-    // Sort
-    const sorted = [...filtered].sort((a, b) => {
-      let aVal: any = a[sortField as keyof Player] ?? 0;
-      let bVal: any = b[sortField as keyof Player] ?? 0;
-      
-      if (typeof aVal === 'string') {
-        aVal = aVal.toLowerCase();
-        bVal = bVal.toLowerCase();
-      }
-      
-      if (sortDirection === 'asc') {
-        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
-      } else {
-        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
-      }
-    });
+    // When sorting by rank or primary_metric, apply tie-breaker for all metrics
+    if (sortField === 'rank' || sortField === 'primary_metric') {
+      filtered = [...filtered].sort((a, b) => {
+        const aPrimary = a.primary_metric ?? 0;
+        const bPrimary = b.primary_metric ?? 0;
+        
+        // Primary sort: primary_metric descending (higher value = higher rank)
+        if (aPrimary !== bPrimary) {
+          return bPrimary - aPrimary; // Descending: higher value first
+        }
+        
+        // Tie-breaker for all metrics: if primary_metric values are equal, 
+        // sort by matches played ascending (fewer matches = higher rank)
+        const aMatches = a.matches_played ?? 0;
+        const bMatches = b.matches_played ?? 0;
+        return aMatches - bMatches; // Ascending: fewer matches first
+      });
+    } else {
+      // Regular sort for other fields
+      filtered = [...filtered].sort((a, b) => {
+        let aVal: any = a[sortField as keyof Player] ?? 0;
+        let bVal: any = b[sortField as keyof Player] ?? 0;
+        
+        if (typeof aVal === 'string') {
+          aVal = aVal.toLowerCase();
+          bVal = bVal.toLowerCase();
+        }
+        
+        let comparison = 0;
+        if (sortDirection === 'asc') {
+          comparison = aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+        } else {
+          comparison = aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+        }
+        
+        // Tie-breaker for all metrics: if sort values are equal, break by matches played
+        if (comparison === 0) {
+          const aPrimary = a.primary_metric ?? 0;
+          const bPrimary = b.primary_metric ?? 0;
+          
+          // If primary metrics are equal, break tie by matches played
+          if (aPrimary === bPrimary) {
+            const aMatches = a.matches_played ?? 0;
+            const bMatches = b.matches_played ?? 0;
+            return aMatches - bMatches; // Ascending: fewer matches first
+          }
+        }
+        
+        return comparison;
+      });
+    }
     
-    return sorted;
-  }, [players, sortField, sortDirection]);
+    // Calculate ranks: players with same primary_metric and matches_played get same rank
+    // Sequential ranking: tied players share rank, but next rank continues sequentially
+    const rankedPlayers: Array<Player & { calculatedRank: number }> = [];
+    let currentRank = 1;
+    
+    for (let i = 0; i < filtered.length; i++) {
+      const player = filtered[i];
+      
+      // Check if this player starts a new rank group (different from previous player)
+      if (i === 0 || 
+          (filtered[i - 1].primary_metric ?? 0) !== (player.primary_metric ?? 0) ||
+          (filtered[i - 1].matches_played ?? 0) !== (player.matches_played ?? 0)) {
+        // Count how many consecutive players have the same primary_metric and matches_played
+        let tiedCount = 1;
+        for (let j = i + 1; j < filtered.length; j++) {
+          if ((filtered[j].primary_metric ?? 0) === (player.primary_metric ?? 0) &&
+              (filtered[j].matches_played ?? 0) === (player.matches_played ?? 0)) {
+            tiedCount++;
+          } else {
+            break;
+          }
+        }
+        
+        // All tied players get the same rank
+        for (let k = 0; k < tiedCount; k++) {
+          rankedPlayers.push({ ...filtered[i + k], calculatedRank: currentRank });
+        }
+        
+        // Next rank continues sequentially (increment by 1, not by tiedCount)
+        currentRank += 1;
+        i += tiedCount - 1; // Skip the tied players we just processed
+      }
+    }
+    
+    // Limit to top N players
+    const limit = parseInt(customTopN) || 0;
+    if (limit > 0 && limit <= 50) {
+      return rankedPlayers.slice(0, limit);
+    }
+    
+    return rankedPlayers;
+  }, [players, sortField, sortDirection, selectedMetric, customTopN]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -249,7 +345,7 @@ const TopPlayers: React.FC = () => {
     <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <Link 
@@ -271,7 +367,7 @@ const TopPlayers: React.FC = () => {
           backgroundImage: `linear-gradient(rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.95)), url(${backgroundImage})`,
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           {/* Filters Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -351,25 +447,57 @@ const TopPlayers: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-2">Number of Top Players (1-50)</label>
                 <input
                   type="number"
-                  min="1"
+                  min="0"
                   max="50"
-                  value={customTopN}
+                  value={customTopN === '0' ? '' : customTopN}
                   onChange={(e) => {
                     const val = e.target.value;
-                    // Only allow digits, empty string, or valid numbers (but not 0)
-                    if (val === '' || (/^\d+$/.test(val) && parseInt(val) !== 0)) {
-                      setCustomTopN(val);
+                    // Allow empty string for deletion (but keep state as '0' internally)
+                    if (val === '') {
+                      setCustomTopN('0');
+                      setTopNError('');
+                      setPlayers([]); // Clear table when empty
+                      return;
+                    }
+                    // Only allow digits
+                    if (/^\d+$/.test(val)) {
+                      const numVal = parseInt(val);
+                      // Check if value is within valid range (allow 0 as default state)
+                      if (numVal === 0) {
+                        setCustomTopN(val);
+                        setTopNError('');
+                        setPlayers([]); // Clear table when value is 0
+                      } else if (numVal >= 1 && numVal <= 50) {
+                        setCustomTopN(val);
+                        setTopNError('');
+                      } else if (numVal < 1) {
+                        setCustomTopN(val);
+                        setTopNError('Wrong input value. Please enter a number between 1-50.');
+                        setPlayers([]); // Clear table when error
+                      } else if (numVal > 50) {
+                        setCustomTopN(val);
+                        setTopNError('Wrong input value. Please enter a number between 1-50.');
+                        setPlayers([]); // Clear table when error
+                      }
                     }
                   }}
                   onBlur={(e) => {
-                    // Validate and set a default if empty, invalid, or 0
+                    // Validate and handle empty, invalid, or out of range values
                     const val = e.target.value.trim();
                     const numVal = parseInt(val);
-                    if (val === '' || isNaN(numVal) || numVal < 1 || numVal === 0) {
-                      setCustomTopN('10');
+                    if (val === '' || isNaN(numVal)) {
+                      // If empty or invalid, set to 0 (default state)
+                      setCustomTopN('0');
+                      setTopNError('');
+                    } else if (numVal < 1 || numVal > 50) {
+                      // If out of range, show error and set to 0
+                      setTopNError('Wrong input value. Please enter a number between 1-50.');
+                      setCustomTopN('0');
                     } else {
+                      // Ensure value is within 1-50 range
                       const num = Math.max(1, Math.min(50, numVal));
                       setCustomTopN(num.toString());
+                      setTopNError('');
                     }
                   }}
                   onWheel={(e) => {
@@ -383,8 +511,15 @@ const TopPlayers: React.FC = () => {
                     }
                   }}
                   placeholder="Enter number (1-50)"
-                  className="w-full px-4 py-2.5 bg-gray-800/80 backdrop-blur-sm border border-gray-600/50 rounded-xl text-white shadow-lg transition-all duration-200 hover:bg-gray-700/80 hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/70 focus:shadow-xl focus:shadow-blue-500/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className={`w-full px-4 py-2.5 bg-gray-800/80 backdrop-blur-sm border rounded-xl text-white shadow-lg transition-all duration-200 hover:bg-gray-700/80 hover:shadow-xl focus:outline-none focus:ring-2 focus:shadow-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                    topNError 
+                      ? 'border-red-500/70 hover:border-red-500/50 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-red-500/20' 
+                      : 'border-gray-600/50 hover:border-blue-500/50 hover:shadow-blue-500/10 focus:ring-blue-500/50 focus:border-blue-500/70 focus:shadow-blue-500/20'
+                  }`}
                 />
+                {topNError && (
+                  <p className="mt-2 text-sm text-red-400 font-medium">{topNError}</p>
+                )}
               </div>
             </div>
           </motion.div>
@@ -410,171 +545,185 @@ const TopPlayers: React.FC = () => {
             ) : filteredAndSortedPlayers.length === 0 ? (
               <div className="flex items-center justify-center py-20">
                 <div className="text-center">
-                  <p className="text-gray-400 text-lg">No players found matching your criteria</p>
+                  <p className="text-gray-400 text-lg">
+                    {customTopN === '0' || customTopN === '' 
+                      ? 'The players with selected criteria will be shown here'
+                      : 'No players found matching your criteria'
+                    }
+                  </p>
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px]">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full min-w-full table-auto">
                   <thead className="bg-gray-700/50">
                     <tr>
-                      <th className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-12">
+                        #
+                      </th>
+                      <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-16">
                         Rank
                       </th>
                       <th 
-                        className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                        className="px-2 md:px-3 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors min-w-[120px]"
                         onClick={() => handleSort('name')}
                       >
                         Player {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       <th 
-                        className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                        className="px-2 md:px-3 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors min-w-[100px]"
                         onClick={() => handleSort('squad')}
                       >
                         Team {sortField === 'squad' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       <th 
-                        className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                        className="px-2 md:px-3 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors w-20"
                         onClick={() => handleSort('position')}
                       >
-                        Position {sortField === 'position' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        Pos {sortField === 'position' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       {selectedLeague === 'All' && (
                         <th 
-                          className="px-4 md:px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                          className="px-2 md:px-3 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors min-w-[100px]"
                           onClick={() => handleSort('competition')}
                         >
                           League {sortField === 'competition' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                       )}
                       <th 
-                        className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                        className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors w-24"
                         onClick={() => handleSort('primary_metric')}
                       >
                         {getMetricDisplayName(selectedMetric)} {sortField === 'primary_metric' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       {selectedMetric !== 'matches_played' && (
                         <th 
-                          className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors"
+                          className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-700/70 transition-colors w-20"
                           onClick={() => handleSort('matches_played')}
                         >
-                          Matches played {sortField === 'matches_played' && (sortDirection === 'asc' ? '↑' : '↓')}
+                          MP {sortField === 'matches_played' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </th>
                       )}
                       {selectedMetric.includes('goals') && !selectedMetric.includes('assist') && selectedMetric !== 'goals' && (
-                        <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                        <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-16">
                           Goals
                         </th>
                       )}
                       {selectedMetric.includes('assist') && !selectedMetric.includes('goals') && selectedMetric !== 'assists' && (
-                        <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                        <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-16">
                           Assists
                         </th>
                       )}
                       {selectedMetric === 'top_goalkeepers' && (
                         <>
-                          <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                            Saves per 90
+                          <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                            Saves/90
                           </th>
-                          <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                          <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider whitespace-nowrap">
                             Total Saves
                           </th>
-                          <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                            Clean Sheet %
+                          <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                            CS %
                           </th>
-                          <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                            Goals Prevented
+                          <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                            Goals Prev
                           </th>
-                          <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
-                            Penalty Saves
+                          <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider whitespace-nowrap">
+                            Pen Saves
                           </th>
                         </>
                       )}
-                      <th className="px-4 md:px-6 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      <th className="px-2 md:px-3 py-4 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-24">
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {filteredAndSortedPlayers.map((player) => (
+                    {filteredAndSortedPlayers.map((player: any, index) => {
+                      const displayRank = player.calculatedRank ?? (index + 1);
+                      const rowNumber = index + 1;
+                      return (
                       <motion.tr
                         key={player.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className={`hover:bg-gray-700/30 transition-colors ${getRankStyle(player.rank)}`}
+                        className={`hover:bg-gray-700/30 transition-colors ${getRankStyle(displayRank)}`}
                       >
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-400 font-semibold text-sm">
+                          {rowNumber}
+                        </td>
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap">
                           <div className="flex items-center justify-center">
-                            {getRankBadge(player.rank)}
+                            {getRankBadge(displayRank)}
                           </div>
                         </td>
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap">
                           <Link
                             to={`/player-stats/${player.id}`}
-                            className="text-white font-semibold hover:text-blue-400 transition-colors block"
+                            className="text-white font-semibold hover:text-blue-400 transition-colors block text-sm"
                           >
                             {player.name}
                           </Link>
-                          <div className="text-sm text-gray-400">{player.nation}</div>
+                          <div className="text-xs text-gray-400">{player.nation}</div>
                         </td>
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-gray-300">{player.squad}</td>
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap text-gray-300 text-sm">{player.squad}</td>
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap">
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                             {player.position}
                           </span>
                         </td>
                         {selectedLeague === 'All' && (
-                          <td className="px-4 md:px-6 py-4 whitespace-nowrap text-gray-300">
+                          <td className="px-2 md:px-3 py-4 whitespace-nowrap text-gray-300 text-sm">
                             {player.competition || 'N/A'}
                           </td>
                         )}
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center">
-                          <span className="text-white font-bold text-lg">
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center">
+                          <span className="text-white font-bold text-base">
                             {formatMetricValue(getMetricValue(player), selectedMetric)}
                             {getMetricUnit(selectedMetric) && (
-                              <span className="text-sm text-gray-400 ml-1">{getMetricUnit(selectedMetric)}</span>
+                              <span className="text-xs text-gray-400 ml-1">{getMetricUnit(selectedMetric)}</span>
                             )}
                           </span>
                         </td>
                         {selectedMetric !== 'matches_played' && (
-                          <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                          <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                             {player.matches_played}
                           </td>
                         )}
                         {selectedMetric.includes('goals') && !selectedMetric.includes('assist') && selectedMetric !== 'goals' && (
-                          <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                          <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                             {player.goals || 0}
                           </td>
                         )}
                         {selectedMetric.includes('assist') && !selectedMetric.includes('goals') && selectedMetric !== 'assists' && (
-                          <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                          <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                             {player.assists || 0}
                           </td>
                         )}
                         {selectedMetric === 'top_goalkeepers' && (
                           <>
-                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                            <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                               {player.saves_per90?.toFixed(2) || '0.00'}
                             </td>
-                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                            <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                               {player.total_saves || 0}
                             </td>
-                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                            <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                               {player.clean_sheet_percentage?.toFixed(1) || '0.0'}%
                             </td>
-                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                            <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                               {player.goals_prevented?.toFixed(2) || '0.00'}
                             </td>
-                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-center text-gray-300">
+                            <td className="px-2 md:px-3 py-4 whitespace-nowrap text-center text-gray-300 text-sm">
                               {player.penalty_saves || 0}
                             </td>
                           </>
                         )}
-                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                        <td className="px-2 md:px-3 py-4 whitespace-nowrap">
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => toggleShortlist(player.id)}
-                              className={`px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-1.5 ${
+                              className={`px-2 py-1.5 rounded-lg transition-all duration-200 font-medium text-xs flex items-center gap-1 ${
                                 isShortlisted(player.id)
                                   ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30'
                                   : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30 hover:scale-105'
@@ -583,12 +732,12 @@ const TopPlayers: React.FC = () => {
                             >
                               {isShortlisted(player.id) ? (
                                 <>
-                                  <Check size={16} className="font-bold" />
+                                  <Check size={14} className="font-bold" />
                                   <span className="text-xs">Added</span>
                                 </>
                               ) : (
                                 <>
-                                  <Plus size={16} className="font-bold" />
+                                  <Plus size={14} className="font-bold" />
                                   <span className="text-xs">Add</span>
                                 </>
                               )}
@@ -596,7 +745,8 @@ const TopPlayers: React.FC = () => {
                           </div>
                         </td>
                       </motion.tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

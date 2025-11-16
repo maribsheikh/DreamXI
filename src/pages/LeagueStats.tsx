@@ -120,10 +120,7 @@ const LeagueStats: React.FC = () => {
           const result = await response.json();
           if (result.leagues && result.leagues.length > 0) {
             setAvailableLeagues(result.leagues);
-            // Auto-select first league if none selected
-            if (!selectedLeague && result.leagues.length > 0) {
-              setSelectedLeague(result.leagues[0]);
-            }
+            // Don't auto-select - let user choose from dropdown
           }
         }
       } catch (error) {
