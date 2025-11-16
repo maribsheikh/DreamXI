@@ -99,38 +99,38 @@ const LoginForm: React.FC = () => {
           error={errors.password}
         />
         
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-2">
           <div className="flex items-center">
             <input
               id="rememberMe"
               type="checkbox"
               checked={formData.rememberMe}
               onChange={handleChange}
-              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-0"
             />
-            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-600 font-medium">
               Remember me
             </label>
           </div>
           
           <div className="text-sm">
-            <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+            <Link to="/forgot-password" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
               Forgot password?
             </Link>
           </div>
         </div>
         
-        <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
+        <Button type="submit" variant="primary" fullWidth disabled={isLoading} className="mt-2">
           <LogIn size={18} className="mr-2" />
           {isLoading ? 'Signing in...' : 'Sign in'}
         </Button>
         
-        <div className="relative my-6">
+        <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            <span className="bg-white px-4 text-gray-500 font-medium">Or continue with</span>
           </div>
         </div>
         
@@ -140,6 +140,7 @@ const LoginForm: React.FC = () => {
             fullWidth 
             type="button"
             onClick={handleGoogleAuth}
+            className="hover:border-gray-400"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
@@ -166,16 +167,17 @@ const LoginForm: React.FC = () => {
             fullWidth 
             type="button"
             onClick={handleFacebookAuth}
+            className="hover:border-gray-400"
           >
-            <Facebook size={18} className="mr-2" />
+            <Facebook size={18} className="mr-2 text-blue-600" />
             Facebook
           </Button>
         </div>
         
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500 inline-flex items-center">
+            <Link to="/signup" className="font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center transition-colors">
               Sign up now
               <ArrowRight size={16} className="ml-1" />
             </Link>

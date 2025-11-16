@@ -180,48 +180,13 @@ const PlayerDetails: React.FC = () => {
           >
             {/* Player Card */}
             <div className="flex justify-center">
-              <PlayerCard player={player} />
+              <div className="w-full max-w-6xl">
+                <PlayerCard player={player} />
+              </div>
             </div>
 
             {/* Statistics */}
             <PlayerStats player={player} />
-
-            {/* League Context */}
-            {player.league_context && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6"
-              >
-                <h3 className="text-xl font-bold text-white mb-6">
-                  League Context - {player.league_context.league_name}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-lg font-semibold text-white mb-4">Top Players in League</h4>
-                    <div className="space-y-2">
-                      {player.league_context.top_players.slice(0, 5).map((leaguePlayer: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-0">
-                          <span className="text-gray-300">{leaguePlayer.name}</span>
-                          <div className="text-sm text-gray-400">
-                            {leaguePlayer.goals}G {leaguePlayer.assists}A
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-primary-400 mb-2">
-                        {player.competition}
-                      </div>
-                      <div className="text-gray-400">Current League</div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </motion.div>
         </div>
       </div>

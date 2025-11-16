@@ -100,7 +100,7 @@ const SignupForm: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           id="name"
           label="Full Name"
@@ -145,19 +145,17 @@ const SignupForm: React.FC = () => {
           error={errors.confirmPassword}
         />
         
-        <div className="pt-2">
-          <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
-            <UserPlus size={18} className="mr-2" />
-            {isLoading ? 'Creating account...' : 'Create account'}
-          </Button>
-        </div>
+        <Button type="submit" variant="primary" fullWidth disabled={isLoading} className="mt-2">
+          <UserPlus size={18} className="mr-2" />
+          {isLoading ? 'Creating account...' : 'Create account'}
+        </Button>
         
-        <div className="relative my-6">
+        <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            <span className="bg-white px-4 text-gray-500 font-medium">Or continue with</span>
           </div>
         </div>
         
@@ -167,6 +165,7 @@ const SignupForm: React.FC = () => {
             fullWidth 
             type="button"
             onClick={handleGoogleAuth}
+            className="hover:border-gray-400"
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path
@@ -193,16 +192,17 @@ const SignupForm: React.FC = () => {
             fullWidth 
             type="button"
             onClick={handleFacebookAuth}
+            className="hover:border-gray-400"
           >
-            <Facebook size={18} className="mr-2" />
+            <Facebook size={18} className="mr-2 text-blue-600" />
             Facebook
           </Button>
         </div>
         
-        <div className="text-center mt-6">
+        <div className="text-center mt-8 pt-6 border-t border-gray-100">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500 inline-flex items-center">
+            <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700 inline-flex items-center transition-colors">
               Sign in
               <ArrowRight size={16} className="ml-1" />
             </Link>

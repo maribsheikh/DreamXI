@@ -11,6 +11,7 @@ import PlayerDetails from './pages/PlayerDetails';
 import ComparePlayers from './pages/ComparePlayers';
 import TopPlayers from './pages/TopPlayers';
 import PlayerShortlist from './pages/PlayerShortlist';
+import SetPieceSpecialists from './pages/SetPieceSpecialists';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/compare" element={<ComparePlayers />} />
         <Route path="/top-players" element={<TopPlayers />} />
         <Route path="/shortlist" element={<PlayerShortlist />} />
+        <Route path="/set-piece-specialists" element={<SetPieceSpecialists />} />
         <Route path="/forgot-password" element={<LoginPage />} /> {/* Placeholder */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

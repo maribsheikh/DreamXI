@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Logo from '../components/common/Logo';
 import SearchBar from '../components/SearchBar';
-import { LogOut, Users, LineChart, Trophy, GitCompare, ChevronDown, ChevronUp, Mail, Bookmark } from 'lucide-react';
+import { LogOut, Users, LineChart, Trophy, GitCompare, ChevronDown, ChevronUp, Mail, Bookmark, Target } from 'lucide-react';
 import backgroundImage from '../assets/homepage.png';
 
 const HomePage: React.FC = () => {
@@ -107,7 +107,6 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              whileHover={{ scale: 1.02, y: -4 }}
               className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(59,130,246,0.3)] transition-all duration-500"
             >
               {/* Animated background gradient */}
@@ -132,13 +131,40 @@ const HomePage: React.FC = () => {
             </motion.div>
           </Link>
 
+          {/* Set-piece Specialists Card */}
+          <Link to="/set-piece-specialists" className="block h-full">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(234,179,8,0.3)] transition-all duration-500"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-yellow-600/0 to-yellow-500/0 group-hover:from-yellow-500/10 group-hover:via-yellow-600/15 group-hover:to-yellow-500/10 transition-all duration-500"></div>
+              
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              </div>
+              
+              <div className="relative z-10 w-full">
+                <motion.div 
+                  whileHover={{ rotate: [0, -5, 5, -5, 0] }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-yellow-500/30 via-yellow-600/25 to-yellow-500/30 backdrop-blur-sm border border-yellow-400/40 group-hover:border-yellow-400/60 group-hover:from-yellow-500/40 group-hover:via-yellow-600/35 group-hover:to-yellow-500/40 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] transition-all duration-500 shadow-xl"
+                >
+                  <Target size={32} className="text-yellow-300 group-hover:text-yellow-200 drop-shadow-lg transition-colors duration-300" />
+                </motion.div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-yellow-200 drop-shadow-md transition-colors duration-300">Set-piece Specialists</h3>
+                <p className="text-gray-300 text-sm leading-relaxed font-medium group-hover:text-gray-200 transition-colors duration-300">Identify players excelling at penalties, free-kicks, and corners</p>
+              </div>
+            </motion.div>
+          </Link>
+
           {/* Player Shortlist Card */}
           <Link to="/shortlist" className="block h-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
               className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(236,72,153,0.3)] transition-all duration-500"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/0 via-pink-600/0 to-pink-500/0 group-hover:from-pink-500/10 group-hover:via-pink-600/15 group-hover:to-pink-500/10 transition-all duration-500"></div>
@@ -166,8 +192,7 @@ const HomePage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
               className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(168,85,247,0.3)] transition-all duration-500"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-purple-600/0 to-purple-500/0 group-hover:from-purple-500/10 group-hover:via-purple-600/15 group-hover:to-purple-500/10 transition-all duration-500"></div>
@@ -195,8 +220,7 @@ const HomePage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              whileHover={{ scale: 1.02, y: -4 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
               className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(34,197,94,0.3)] transition-all duration-500"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 via-green-600/0 to-green-500/0 group-hover:from-green-500/10 group-hover:via-green-600/15 group-hover:to-green-500/10 transition-all duration-500"></div>
@@ -213,38 +237,13 @@ const HomePage: React.FC = () => {
                 >
                   <LineChart size={32} className="text-green-300 group-hover:text-green-200 drop-shadow-lg transition-colors duration-300" />
                 </motion.div>
-                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-green-200 drop-shadow-md transition-colors duration-300">League Statistics</h3>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-green-200 drop-shadow-md transition-colors duration-300">
+                  League Statistics <span className="text-sm font-normal text-gray-400">(2023-2024)</span>
+                </h3>
                 <p className="text-gray-300 text-sm leading-relaxed font-medium group-hover:text-gray-200 transition-colors duration-300">Compare all leagues with interactive visualizations</p>
               </div>
             </motion.div>
           </Link>
-
-          {/* Position Analysis Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
-            whileHover={{ scale: 1.02, y: -4 }}
-            className="group relative overflow-hidden rounded-3xl p-8 border border-white/10 backdrop-blur-xl bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 cursor-pointer h-full flex flex-col items-center justify-center text-center shadow-2xl hover:shadow-[0_20px_50px_rgba(234,179,8,0.3)] transition-all duration-500"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/0 via-yellow-600/0 to-yellow-500/0 group-hover:from-yellow-500/10 group-hover:via-yellow-600/15 group-hover:to-yellow-500/10 transition-all duration-500"></div>
-            
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            </div>
-            
-            <div className="relative z-10 w-full">
-              <motion.div 
-                whileHover={{ rotate: [0, -5, 5, -5, 0] }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-yellow-500/30 via-yellow-600/25 to-yellow-500/30 backdrop-blur-sm border border-yellow-400/40 group-hover:border-yellow-400/60 group-hover:from-yellow-500/40 group-hover:via-yellow-600/35 group-hover:to-yellow-500/40 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(234,179,8,0.5)] transition-all duration-500 shadow-xl"
-              >
-                <Trophy size={32} className="text-yellow-300 group-hover:text-yellow-200 drop-shadow-lg transition-colors duration-300" />
-              </motion.div>
-              <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-yellow-200 drop-shadow-md transition-colors duration-300">Position Analysis</h3>
-              <p className="text-gray-300 text-sm leading-relaxed font-medium group-hover:text-gray-200 transition-colors duration-300">Find the best players for each position</p>
-            </div>
-          </motion.div>
           </div>
         </div>
       </main>

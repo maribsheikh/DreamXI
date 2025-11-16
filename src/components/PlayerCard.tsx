@@ -92,7 +92,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden"
+      className="relative bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900 rounded-3xl shadow-2xl border border-gray-700/50 overflow-hidden backdrop-blur-xl"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -101,28 +101,31 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
         }} />
       </div>
 
-      <div className="relative p-8">
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-600/5 via-transparent to-green-600/5"></div>
+
+      <div className="relative p-10">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-8">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${getPositionColor(player.position)}`}>
+            <div className="flex items-center gap-3 mb-3">
+              <span className={`px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-lg ${getPositionColor(player.position)}`}>
                 {getPositionAbbreviation(player.position)}
               </span>
-              <span className="text-sm text-gray-400">#{player.age}</span>
+              <span className="text-sm text-gray-300 font-medium bg-gray-700/50 px-3 py-1 rounded-full">#{player.age}</span>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-1">{player.name}</h1>
-            <div className="flex items-center text-gray-400 text-sm">
-              <Users size={16} className="mr-1" />
+            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">{player.name}</h1>
+            <div className="flex items-center text-gray-300 text-base font-medium">
+              <Users size={18} className="mr-2" />
               <span>{player.squad}</span>
             </div>
           </div>
         </div>
 
         {/* Player Image */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8">
           <div className="relative">
-            <div className="w-56 h-56 rounded-full overflow-hidden border-4 border-primary-500 shadow-lg bg-gray-700">
+            <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-primary-500/80 shadow-2xl bg-gray-700 ring-4 ring-primary-500/20">
               {imageLoading ? (
                 <div className="w-full h-full bg-gray-700 flex items-center justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
@@ -141,94 +144,94 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
               )}
             </div>
             {/* Badge */}
-            <div className="absolute -bottom-2 -right-2 bg-primary-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xs font-bold shadow-lg">
+            <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-full w-14 h-14 flex items-center justify-center text-sm font-bold shadow-xl ring-4 ring-gray-800">
               {player.age}
             </div>
           </div>
         </div>
 
         {/* Player Info */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+        <div className="space-y-3 mb-8">
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-800/40 rounded-xl border border-gray-700/50 hover:bg-gray-800/60 transition-colors">
             <div className="flex items-center text-gray-300">
-              <MapPin size={16} className="mr-2" />
-              <span className="text-sm">Nationality</span>
+              <MapPin size={18} className="mr-3" />
+              <span className="text-sm font-medium">Nationality</span>
             </div>
-            <span className="font-semibold text-white">{player.nation}</span>
+            <span className="font-bold text-white text-base">{player.nation}</span>
           </div>
           
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-800/40 rounded-xl border border-gray-700/50 hover:bg-gray-800/60 transition-colors">
             <div className="flex items-center text-gray-300">
-              <Trophy size={16} className="mr-2" />
-              <span className="text-sm">League</span>
+              <Trophy size={18} className="mr-3" />
+              <span className="text-sm font-medium">League</span>
             </div>
-            <span className="font-semibold text-white">{player.competition}</span>
+            <span className="font-bold text-white text-base">{player.competition}</span>
           </div>
           
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-800/40 rounded-xl border border-gray-700/50 hover:bg-gray-800/60 transition-colors">
             <div className="flex items-center text-gray-300">
-              <Users size={16} className="mr-2" />
-              <span className="text-sm">Position</span>
+              <Users size={18} className="mr-3" />
+              <span className="text-sm font-medium">Position</span>
             </div>
             <div className="text-right">
-              <span className="font-semibold text-white">{player.position}</span>
+              <span className="font-bold text-white text-base">{player.position}</span>
               <span className="text-gray-400 text-sm ml-2">({getPositionAbbreviation(player.position)})</span>
             </div>
           </div>
           
-          <div className="flex items-center justify-between py-2 border-b border-gray-700">
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-800/40 rounded-xl border border-gray-700/50 hover:bg-gray-800/60 transition-colors">
             <div className="flex items-center text-gray-300">
-              <Calendar size={16} className="mr-2" />
-              <span className="text-sm">Matches</span>
+              <Calendar size={18} className="mr-3" />
+              <span className="text-sm font-medium">Matches</span>
             </div>
-            <span className="font-semibold text-white">{player.matches_played}</span>
+            <span className="font-bold text-white text-base">{player.matches_played}</span>
           </div>
         </div>
 
         {/* Stats Grid */}
         {isGoalkeeper() ? (
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-              <div className="text-2xl font-bold text-primary-400">
+          <div className="grid grid-cols-2 gap-5 mb-8">
+            <div className="text-center p-6 bg-gradient-to-br from-gray-800/60 to-gray-800/40 rounded-xl border border-gray-700/50 shadow-lg hover:shadow-xl transition-all">
+              <div className="text-3xl font-bold text-primary-400 mb-1">
                 {player.position_metrics?.clean_sheets || 0}
               </div>
-              <div className="text-xs text-gray-400">Clean Sheets</div>
-              <div className="text-xs text-gray-500">
+              <div className="text-sm text-gray-300 font-medium mb-1">Clean Sheets</div>
+              <div className="text-xs text-gray-400">
                 {player.position_metrics?.clean_sheet_percentage?.toFixed(1) || '0.0'}%
               </div>
             </div>
             
-            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-              <div className="text-2xl font-bold text-green-400">
+            <div className="text-center p-6 bg-gradient-to-br from-gray-800/60 to-gray-800/40 rounded-xl border border-gray-700/50 shadow-lg hover:shadow-xl transition-all">
+              <div className="text-3xl font-bold text-green-400 mb-1">
                 {player.position_metrics?.total_saves || 0}
               </div>
-              <div className="text-xs text-gray-400">Total Saves</div>
-              <div className="text-xs text-gray-500">
+              <div className="text-sm text-gray-300 font-medium mb-1">Total Saves</div>
+              <div className="text-xs text-gray-400">
                 {player.position_metrics?.saves_per90?.toFixed(2) || '0.00'}/90
               </div>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-              <div className="text-2xl font-bold text-primary-400">{player.goals}</div>
-              <div className="text-xs text-gray-400">Goals</div>
-              <div className="text-xs text-gray-500">{player.goals_per90.toFixed(2)}/90</div>
+          <div className="grid grid-cols-2 gap-5 mb-8">
+            <div className="text-center p-6 bg-gradient-to-br from-gray-800/60 to-gray-800/40 rounded-xl border border-gray-700/50 shadow-lg hover:shadow-xl transition-all">
+              <div className="text-3xl font-bold text-primary-400 mb-1">{player.goals}</div>
+              <div className="text-sm text-gray-300 font-medium mb-1">Goals</div>
+              <div className="text-xs text-gray-400">{player.goals_per90.toFixed(2)}/90</div>
             </div>
             
-            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-              <div className="text-2xl font-bold text-green-400">{player.assists}</div>
-              <div className="text-xs text-gray-400">Assists</div>
-              <div className="text-xs text-gray-500">{player.assists_per90.toFixed(2)}/90</div>
+            <div className="text-center p-6 bg-gradient-to-br from-gray-800/60 to-gray-800/40 rounded-xl border border-gray-700/50 shadow-lg hover:shadow-xl transition-all">
+              <div className="text-3xl font-bold text-green-400 mb-1">{player.assists}</div>
+              <div className="text-sm text-gray-300 font-medium mb-1">Assists</div>
+              <div className="text-xs text-gray-400">{player.assists_per90.toFixed(2)}/90</div>
             </div>
           </div>
         )}
 
         {/* Performance Indicator */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-primary-600/20 to-green-600/20 rounded-lg border border-primary-500/30">
+        <div className="p-5 bg-gradient-to-r from-primary-600/20 via-primary-600/15 to-green-600/20 rounded-xl border border-primary-500/40 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">Performance Rating</span>
-            <div className="flex items-center">
+            <span className="text-base font-semibold text-gray-200">Performance Rating</span>
+            <div className="flex items-center gap-1.5">
               {[...Array(5)].map((_, i) => {
                 let rating = 0;
                 if (isGoalkeeper()) {
@@ -243,8 +246,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
                 return (
                   <div
                     key={i}
-                    className={`w-2 h-2 rounded-full mx-1 ${
-                      i < rating ? 'bg-yellow-400' : 'bg-gray-600'
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      i < rating ? 'bg-yellow-400 shadow-lg shadow-yellow-400/50' : 'bg-gray-600/50'
                     }`}
                   />
                 );
