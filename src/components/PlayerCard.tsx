@@ -16,6 +16,14 @@ interface PlayerCardProps {
     matches_played: number;
     goals_per90: number;
     assists_per90: number;
+    position_metrics?: {
+      saves_per90?: number;
+      total_saves?: number;
+      clean_sheets?: number;
+      clean_sheet_percentage?: number;
+      goals_prevented?: number;
+      penalty_saves?: number;
+    };
   };
 }
 
@@ -72,6 +80,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
     if (pos.includes('centre-forward') || pos.includes('center-forward')) return 'CF';
     if (pos.includes('striker')) return 'ST';
     return position.split(' ').map(word => word[0]).join('').toUpperCase();
+  };
+
+  const isGoalkeeper = () => {
+    const pos = player.position.toLowerCase();
+    return pos.includes('goalkeeper') || pos.includes('gk');
   };
 
   return (
@@ -173,35 +186,69 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-            <div className="text-2xl font-bold text-primary-400">{player.goals}</div>
-            <div className="text-xs text-gray-400">Goals</div>
-            <div className="text-xs text-gray-500">{player.goals_per90.toFixed(2)}/90</div>
+        {isGoalkeeper() ? (
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="text-2xl font-bold text-primary-400">
+                {player.position_metrics?.clean_sheets || 0}
+              </div>
+              <div className="text-xs text-gray-400">Clean Sheets</div>
+              <div className="text-xs text-gray-500">
+                {player.position_metrics?.clean_sheet_percentage?.toFixed(1) || '0.0'}%
+              </div>
+            </div>
+            
+            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="text-2xl font-bold text-green-400">
+                {player.position_metrics?.total_saves || 0}
+              </div>
+              <div className="text-xs text-gray-400">Total Saves</div>
+              <div className="text-xs text-gray-500">
+                {player.position_metrics?.saves_per90?.toFixed(2) || '0.00'}/90
+              </div>
+            </div>
           </div>
-          
-          <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-            <div className="text-2xl font-bold text-green-400">{player.assists}</div>
-            <div className="text-xs text-gray-400">Assists</div>
-            <div className="text-xs text-gray-500">{player.assists_per90.toFixed(2)}/90</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="text-2xl font-bold text-primary-400">{player.goals}</div>
+              <div className="text-xs text-gray-400">Goals</div>
+              <div className="text-xs text-gray-500">{player.goals_per90.toFixed(2)}/90</div>
+            </div>
+            
+            <div className="text-center p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="text-2xl font-bold text-green-400">{player.assists}</div>
+              <div className="text-xs text-gray-400">Assists</div>
+              <div className="text-xs text-gray-500">{player.assists_per90.toFixed(2)}/90</div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Performance Indicator */}
         <div className="mt-6 p-4 bg-gradient-to-r from-primary-600/20 to-green-600/20 rounded-lg border border-primary-500/30">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-300">Performance Rating</span>
             <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-2 h-2 rounded-full mx-1 ${
-                    i < Math.min(5, Math.floor((player.goals + player.assists) / 3))
-                      ? 'bg-yellow-400'
-                      : 'bg-gray-600'
-                  }`}
-                />
-              ))}
+              {[...Array(5)].map((_, i) => {
+                let rating = 0;
+                if (isGoalkeeper()) {
+                  // For goalkeepers, use clean sheets and saves for rating
+                  const cleanSheets = player.position_metrics?.clean_sheets || 0;
+                  const saves = player.position_metrics?.total_saves || 0;
+                  rating = Math.min(5, Math.floor((cleanSheets + saves / 10) / 3));
+                } else {
+                  // For other players, use goals and assists
+                  rating = Math.min(5, Math.floor((player.goals + player.assists) / 3));
+                }
+                return (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full mx-1 ${
+                      i < rating ? 'bg-yellow-400' : 'bg-gray-600'
+                    }`}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

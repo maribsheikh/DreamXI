@@ -42,6 +42,29 @@ interface PlayerData {
   progressive_carries: number;
   progressive_passes: number;
   progressive_dribbles: number;
+  position_metrics?: {
+    saves_per90?: number;
+    total_saves?: number;
+    clean_sheets?: number;
+    clean_sheet_percentage?: number;
+    goals_prevented?: number;
+    penalty_saves?: number;
+    tackles_per90?: number;
+    total_tackles?: number;
+    interceptions_per90?: number;
+    total_interceptions?: number;
+    aerial_duels_per90?: number;
+    total_aerial_duels?: number;
+    aerial_duel_win_rate?: number;
+    passing_accuracy?: number;
+    progressive_passes_per90?: number;
+    progressive_carries_per90?: number;
+    key_passes_per90?: number;
+    total_key_passes?: number;
+    dribbles_per90?: number;
+    total_dribbles?: number;
+    dribble_success_rate?: number;
+  };
   created_at: string;
   updated_at: string;
 }

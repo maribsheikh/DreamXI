@@ -10,7 +10,11 @@ interface SearchResult {
   nation: string;  // Changed from nationality to nation to match backend
 }
 
-const SearchBar: React.FC = () => {
+interface SearchBarProps {
+  positionFilter?: string;  // Optional position filter prop
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ positionFilter = 'All' }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +43,13 @@ const SearchBar: React.FC = () => {
 
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/players/search/?q=${encodeURIComponent(query)}`);
+        // Build URL with position filter if provided
+        let url = `http://localhost:8000/api/players/search/?q=${encodeURIComponent(query)}`;
+        if (positionFilter && positionFilter !== 'All') {
+          url += `&position=${encodeURIComponent(positionFilter)}`;
+        }
+        
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Search request failed');
         }
@@ -56,7 +66,7 @@ const SearchBar: React.FC = () => {
     // Reduced timeout for more responsive search
     const timeoutId = setTimeout(searchPlayers, 150);
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, positionFilter]);
 
   const handlePlayerClick = (playerId: number) => {
     navigate(`/player-stats/${playerId}`);
